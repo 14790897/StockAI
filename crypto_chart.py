@@ -160,7 +160,13 @@ if __name__ == "__main__":
             new_crypto_data = get_crypto_data(
                 exchange, ticker, timeframe="1m", since=last_timestamp
             )
-            if new_crypto_data is not None:
+            if new_crypto_data is not None and not new_crypto_data.empty:
+                # 合并新数据到现有数据
+                crypto_data = pd.concat([crypto_data, new_crypto_data])
+                crypto_data = crypto_data[
+                    ~crypto_data.index.duplicated(keep="last")
+                ]  # 移除重复数据
+
                 # 更新数据
                 new_crypto_data["MA"] = calculate_moving_average(new_crypto_data, 20)
                 new_crypto_data["Upper Band"], new_crypto_data["Lower Band"] = (
@@ -174,17 +180,12 @@ if __name__ == "__main__":
 
                 # 生成交易信号
                 signal = generate_signals(new_crypto_data)
-                # take_profit, stop_loss = calculate_profit_loss_points(
-                #     new_crypto_data, signal
-                # )
                 leverage = leverage_suggestion(principal, signal)
                 current_price = new_crypto_data["close"].iloc[-1]  # 获取当前价格
 
                 # 输出交易信号、止盈止损点和杠杆建议
                 signal_info = {
                     "signal": signal,
-                    # "take_profit": take_profit,
-                    # "stop_loss": stop_loss,
                     "leverage": leverage,
                     "current_price": current_price,  # 添加当前价格
                 }
