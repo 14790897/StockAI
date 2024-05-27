@@ -1,8 +1,18 @@
-import ccxt
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-import time
+try:
+    import ccxt
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from datetime import datetime
+    import time
+except ImportError as e:
+    print(f"Import Error: {e}")
+    # 在这里自动安装缺失的包
+    import subprocess
+    import sys
+
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "ccxt", "pandas", "matplotlib"]
+    )
 
 
 # 获取加密货币数据
@@ -14,6 +24,21 @@ def get_crypto_data(exchange, ticker, timeframe="1m", limit=500):
     data["timestamp"] = pd.to_datetime(data["timestamp"], unit="ms")
     data.set_index("timestamp", inplace=True)
     return data
+
+
+def get_new_crypto_data(exchange, ticker, since=None, timeframe="1m"):
+    if since:
+        ohlcv = exchange.fetch_ohlcv(ticker, timeframe=timeframe, since=since)
+    else:
+        ohlcv = exchange.fetch_ohlcv(ticker, timeframe=timeframe)
+    if ohlcv:
+        data = pd.DataFrame(
+            ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"]
+        )
+        data["timestamp"] = pd.to_datetime(data["timestamp"], unit="ms")
+        data.set_index("timestamp", inplace=True)
+        return data
+    return None
 
 
 # 计算移动平均线
@@ -95,6 +120,8 @@ def leverage_suggestion(principal, signal, risk_ratio=0.1):
 
 # 绘制图表
 def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
+    # 清除旧的文本注释
+    ax1.texts.clear()
     # 更新价格和布林带数据
     lines["close_price"].set_ydata(data["close"])
     lines["ma"].set_ydata(data["MA"])
@@ -131,25 +158,9 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
         verticalalignment="top",
     )
     if signal_info["signal"] in ["buy", "sell"]:
-        # ax1.text(
-        #     0.02,
-        #     0.90,
-        #     f"Take Profit: {signal_info['take_profit']}",
-        #     transform=ax1.transAxes,
-        #     fontsize=12,
-        #     verticalalignment="top",
-        # )
-        # ax1.text(
-        #     0.02,
-        #     0.85,
-        #     f"Stop Loss: {signal_info['stop_loss']}",
-        #     transform=ax1.transAxes,
-        #     fontsize=12,
-        #     verticalalignment="top",
-        # )
         ax1.text(
             0.02,
-            0.80,
+            0.85,
             f"Leverage: {signal_info['leverage']}x",
             transform=ax1.transAxes,
             fontsize=12,
@@ -220,7 +231,10 @@ if __name__ == "__main__":
 
         while True:
             # 获取加密货币数据
-            new_crypto_data = get_crypto_data(exchange, ticker, timeframe, limit)
+            last_timestamp = int(crypto_data.index[-1].timestamp() * 1000)
+            new_crypto_data = get_new_crypto_data(
+                exchange, ticker, last_timestamp, timeframe
+            )
             if new_crypto_data is not None:
                 # 更新数据
                 new_crypto_data["MA"] = calculate_moving_average(new_crypto_data, 20)
