@@ -122,23 +122,31 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
         fontsize=12,
         verticalalignment="top",
     )
+    ax1.text(
+        0.02,
+        0.90,
+        f"Current Price: {signal_info['current_price']}",
+        transform=ax1.transAxes,
+        fontsize=12,
+        verticalalignment="top",
+    )
     if signal_info["signal"] in ["buy", "sell"]:
-        ax1.text(
-            0.02,
-            0.90,
-            f"Take Profit: {signal_info['take_profit']}",
-            transform=ax1.transAxes,
-            fontsize=12,
-            verticalalignment="top",
-        )
-        ax1.text(
-            0.02,
-            0.85,
-            f"Stop Loss: {signal_info['stop_loss']}",
-            transform=ax1.transAxes,
-            fontsize=12,
-            verticalalignment="top",
-        )
+        # ax1.text(
+        #     0.02,
+        #     0.90,
+        #     f"Take Profit: {signal_info['take_profit']}",
+        #     transform=ax1.transAxes,
+        #     fontsize=12,
+        #     verticalalignment="top",
+        # )
+        # ax1.text(
+        #     0.02,
+        #     0.85,
+        #     f"Stop Loss: {signal_info['stop_loss']}",
+        #     transform=ax1.transAxes,
+        #     fontsize=12,
+        #     verticalalignment="top",
+        # )
         ax1.text(
             0.02,
             0.80,
@@ -231,19 +239,21 @@ if __name__ == "__main__":
                     new_crypto_data, signal
                 )
                 leverage = leverage_suggestion(principal, signal)
+                current_price = new_crypto_data["close"].iloc[-1]  # 获取当前价格
 
                 # 输出交易信号、止盈止损点和杠杆建议
                 signal_info = {
                     "signal": signal,
-                    "take_profit": take_profit,
-                    "stop_loss": stop_loss,
+                    # "take_profit": take_profit,
+                    # "stop_loss": stop_loss,
                     "leverage": leverage,
+                    "current_price": current_price,  # 添加当前价格
                 }
-
+                print("signal_info", signal_info)
                 # 更新图表
                 plot_crypto_data(new_crypto_data, ticker, ax1, ax2, lines, signal_info)
 
             # 每分钟更新一次数据
-            time.sleep(60)
+            time.sleep(10)
     else:
         print("Failed to fetch initial data.")
