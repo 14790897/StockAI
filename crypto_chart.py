@@ -94,7 +94,7 @@ def leverage_suggestion(principal, signal, risk_ratio=0.1):
 
 
 # 绘制图表
-def plot_crypto_data(data, ticker, ax1, ax2, lines):
+def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
     # 更新价格和布林带数据
     lines["close_price"].set_ydata(data["close"])
     lines["ma"].set_ydata(data["MA"])
@@ -112,6 +112,41 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines):
     # 重绘图表
     plt.draw()
     plt.pause(1)
+
+    # 显示交易信号、止盈止损点和杠杆建议
+    ax1.text(
+        0.02,
+        0.95,
+        f"Signal: {signal_info['signal']}",
+        transform=ax1.transAxes,
+        fontsize=12,
+        verticalalignment="top",
+    )
+    if signal_info["signal"] in ["buy", "sell"]:
+        ax1.text(
+            0.02,
+            0.90,
+            f"Take Profit: {signal_info['take_profit']}",
+            transform=ax1.transAxes,
+            fontsize=12,
+            verticalalignment="top",
+        )
+        ax1.text(
+            0.02,
+            0.85,
+            f"Stop Loss: {signal_info['stop_loss']}",
+            transform=ax1.transAxes,
+            fontsize=12,
+            verticalalignment="top",
+        )
+        ax1.text(
+            0.02,
+            0.80,
+            f"Leverage: {signal_info['leverage']}x",
+            transform=ax1.transAxes,
+            fontsize=12,
+            verticalalignment="top",
+        )
 
 
 def initialize_plot(data, ticker):
@@ -195,17 +230,18 @@ if __name__ == "__main__":
                 take_profit, stop_loss = calculate_profit_loss_points(
                     new_crypto_data, signal
                 )
+                leverage = leverage_suggestion(principal, signal)
 
-                # 输出交易信号和止盈止损点
-                print(f"Trading Signal: {signal}")
-                if signal in ["buy", "sell"]:
-                    leverage = leverage_suggestion(principal, signal)
-                    print(f"Take Profit: {take_profit}")
-                    print(f"Stop Loss: {stop_loss}")
-                    print(f"Suggested Leverage: {leverage}x")
+                # 输出交易信号、止盈止损点和杠杆建议
+                signal_info = {
+                    "signal": signal,
+                    "take_profit": take_profit,
+                    "stop_loss": stop_loss,
+                    "leverage": leverage,
+                }
 
                 # 更新图表
-                plot_crypto_data(new_crypto_data, ticker, ax1, ax2, lines)
+                plot_crypto_data(new_crypto_data, ticker, ax1, ax2, lines, signal_info)
 
             # 每分钟更新一次数据
             time.sleep(60)
