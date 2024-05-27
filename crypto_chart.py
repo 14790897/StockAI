@@ -47,20 +47,20 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
     ax1.texts.clear()
 
     # 更新价格和布林带数据
-    lines["close_price"].set_data(data.index, data["close"].values)
-    lines["ma"].set_data(data.index, data["MA"].values)
-    lines["upper_band"].set_data(data.index, data["Upper Band"].values)
-    lines["lower_band"].set_data(data.index, data["Lower Band"].values)
-    ax1.set_xlim(data.index.min(), data.index.max())
-    ax1.set_ylim(min(data["close"]), max(data["close"]))
+    lines["close_price"].set_data(data.index.values, data["close"].values)
+    lines["ma"].set_data(data.index.values, data["MA"].values)
+    lines["upper_band"].set_data(data.index.values, data["Upper Band"].values)
+    lines["lower_band"].set_data(data.index.values, data["Lower Band"].values)
+    ax1.set_xlim(data.index.values.min(), data.index.values.max())
+    ax1.set_ylim(data["close"].values.min(), data["close"].values.max())
 
     # 更新MACD数据
-    lines["macd"].set_data(data.index, data["MACD"].values)
-    lines["signal"].set_data(data.index, data["Signal"].values)
+    lines["macd"].set_data(data.index.values, data["MACD"].values)
+    lines["signal"].set_data(data.index.values, data["Signal"].values)
     for rect, h in zip(lines["macd_hist"], data["MACD_Hist"].values):
         rect.set_height(h)
-    ax2.set_xlim(data.index.min(), data.index.max())
-    ax2.set_ylim(min(data["MACD_Hist"]), max(data["MACD_Hist"]))
+    ax2.set_xlim(data.index.values.min(), data.index.values.max())
+    ax2.set_ylim(data["MACD_Hist"].values.min(), data["MACD_Hist"].values.max())
 
     # 重绘图表
     plt.draw()
@@ -101,29 +101,46 @@ def initialize_plot(data, ticker):
 
     lines = {}
     (lines["close_price"],) = ax1.plot(
-        data.index, data["close"], label="Close Price", color="black"
+        data.index.values, data["close"].values, label="Close Price", color="black"
     )
-    (lines["ma"],) = ax1.plot(data.index, data["MA"], label=f"MA 20", color="blue")
+    (lines["ma"],) = ax1.plot(
+        data.index.values, data["MA"].values, label=f"MA 20", color="blue"
+    )
     (lines["upper_band"],) = ax1.plot(
-        data.index, data["Upper Band"], label="Upper Bollinger Band", color="red"
+        data.index.values,
+        data["Upper Band"].values,
+        label="Upper Bollinger Band",
+        color="red",
     )
     (lines["lower_band"],) = ax1.plot(
-        data.index, data["Lower Band"], label="Lower Bollinger Band", color="green"
+        data.index.values,
+        data["Lower Band"].values,
+        label="Lower Bollinger Band",
+        color="green",
     )
     ax1.fill_between(
-        data.index, data["Upper Band"], data["Lower Band"], color="gray", alpha=0.3
+        data.index.values,
+        data["Upper Band"].values,
+        data["Lower Band"].values,
+        color="gray",
+        alpha=0.3,
     )
     ax1.set_title(f"{ticker} Price Chart with MA and Bollinger Bands")
     ax1.set_xlabel("Time")
     ax1.set_ylabel("Price")
     ax1.legend(loc="best")
 
-    (lines["macd"],) = ax2.plot(data.index, data["MACD"], label="MACD", color="blue")
+    (lines["macd"],) = ax2.plot(
+        data.index.values, data["MACD"].values, label="MACD", color="blue"
+    )
     (lines["signal"],) = ax2.plot(
-        data.index, data["Signal"], label="Signal Line", color="red"
+        data.index.values, data["Signal"].values, label="Signal Line", color="red"
     )
     lines["macd_hist"] = ax2.bar(
-        data.index, data["MACD_Hist"], label="MACD Histogram", color="gray"
+        data.index.values,
+        data["MACD_Hist"].values,
+        label="MACD Histogram",
+        color="gray",
     )
     ax2.set_title("MACD")
     ax2.set_xlabel("Time")
