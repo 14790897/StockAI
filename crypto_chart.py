@@ -14,7 +14,6 @@ try:
     import time
 except ImportError as e:
     print(f"Import Error: {e}")
-    # 在这里自动安装缺失的包
     import subprocess
     import sys
 
@@ -40,25 +39,27 @@ def get_crypto_data(exchange, ticker, timeframe="1m", limit=500, since=None):
     except Exception as e:
         print(f"Error fetching data: {e}")
         return None
-    return None
 
 
 # 绘制图表
 def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
     # 清除旧的文本注释
     ax1.texts.clear()
+
     # 更新价格和布林带数据
-    lines["close_price"].set_ydata(data["close"].values)
-    lines["ma"].set_ydata(data["MA"].values)
-    lines["upper_band"].set_ydata(data["Upper Band"].values)
-    lines["lower_band"].set_ydata(data["Lower Band"].values)
+    lines["close_price"].set_data(data.index, data["close"].values)
+    lines["ma"].set_data(data.index, data["MA"].values)
+    lines["upper_band"].set_data(data.index, data["Upper Band"].values)
+    lines["lower_band"].set_data(data.index, data["Lower Band"].values)
+    ax1.set_xlim(data.index.min(), data.index.max())
     ax1.set_ylim(min(data["close"]), max(data["close"]))
 
     # 更新MACD数据
-    lines["macd"].set_ydata(data["MACD"].values)
-    lines["signal"].set_ydata(data["Signal"].values)
+    lines["macd"].set_data(data.index, data["MACD"].values)
+    lines["signal"].set_data(data.index, data["Signal"].values)
     for rect, h in zip(lines["macd_hist"], data["MACD_Hist"].values):
         rect.set_height(h)
+    ax2.set_xlim(data.index.min(), data.index.max())
     ax2.set_ylim(min(data["MACD_Hist"]), max(data["MACD_Hist"]))
 
     # 重绘图表
@@ -100,14 +101,14 @@ def initialize_plot(data, ticker):
 
     lines = {}
     (lines["close_price"],) = ax1.plot(
-        data["close"], label="Close Price", color="black"
+        data.index, data["close"], label="Close Price", color="black"
     )
-    (lines["ma"],) = ax1.plot(data["MA"], label=f"MA 20", color="blue")
+    (lines["ma"],) = ax1.plot(data.index, data["MA"], label=f"MA 20", color="blue")
     (lines["upper_band"],) = ax1.plot(
-        data["Upper Band"], label="Upper Bollinger Band", color="red"
+        data.index, data["Upper Band"], label="Upper Bollinger Band", color="red"
     )
     (lines["lower_band"],) = ax1.plot(
-        data["Lower Band"], label="Lower Bollinger Band", color="green"
+        data.index, data["Lower Band"], label="Lower Bollinger Band", color="green"
     )
     ax1.fill_between(
         data.index, data["Upper Band"], data["Lower Band"], color="gray", alpha=0.3
@@ -117,8 +118,10 @@ def initialize_plot(data, ticker):
     ax1.set_ylabel("Price")
     ax1.legend(loc="best")
 
-    (lines["macd"],) = ax2.plot(data["MACD"], label="MACD", color="blue")
-    (lines["signal"],) = ax2.plot(data["Signal"], label="Signal Line", color="red")
+    (lines["macd"],) = ax2.plot(data.index, data["MACD"], label="MACD", color="blue")
+    (lines["signal"],) = ax2.plot(
+        data.index, data["Signal"], label="Signal Line", color="red"
+    )
     lines["macd_hist"] = ax2.bar(
         data.index, data["MACD_Hist"], label="MACD Histogram", color="gray"
     )
@@ -137,14 +140,12 @@ if __name__ == "__main__":
     ticker = "BTC/USDT"  # 比特币对USDT的符号
     timeframe = "1m"  # 可以更改为'5m', '15m', '1h', '4h', '1d' 等
     limit = 1000  # 获取最近1000条数据
-    principal = 500  # 本金金额（USD）
+    principal = 10  # 本金金额（USD）
 
     plt.ion()  # 开启交互模式
 
     # 初始绘图
     crypto_data = get_crypto_data(exchange, ticker, timeframe, limit)
-    # print("crypto_data", crypto_data)
-    # print("len(data) ", len(crypto_data))
     if crypto_data is not None:
         crypto_data["MA"] = calculate_moving_average(crypto_data, 20)
         crypto_data["Upper Band"], crypto_data["Lower Band"] = (
@@ -170,16 +171,20 @@ if __name__ == "__main__":
                         ~crypto_data.index.duplicated(keep="last")
                     ]  # 移除重复数据
 
-                    # 更新数据
-                    crypto_data["MA"] = calculate_moving_average(crypto_data, 20)
-                    crypto_data["Upper Band"], crypto_data["Lower Band"] = (
-                        calculate_bollinger_bands(crypto_data, 20)
-                    )
+                    # 计算指标，只计算新数据部分
+                    new_indices = new_crypto_data.index
+                    crypto_data.loc[new_indices, "MA"] = calculate_moving_average(
+                        crypto_data, 20
+                    ).loc[new_indices]
                     (
-                        crypto_data["MACD"],
-                        crypto_data["Signal"],
-                        crypto_data["MACD_Hist"],
-                    ) = calculate_macd(crypto_data)
+                        crypto_data.loc[new_indices, "Upper Band"],
+                        crypto_data.loc[new_indices, "Lower Band"],
+                    ) = calculate_bollinger_bands(crypto_data, 20).loc[new_indices]
+                    (
+                        crypto_data.loc[new_indices, "MACD"],
+                        crypto_data.loc[new_indices, "Signal"],
+                        crypto_data.loc[new_indices, "MACD_Hist"],
+                    ) = calculate_macd(crypto_data).loc[new_indices]
 
                     # 生成交易信号
                     signal = generate_signals(crypto_data)
