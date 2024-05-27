@@ -5,8 +5,20 @@ def calculate_moving_average(data, window):
     return data["close"].rolling(window=window).mean()
 
 
-# 计算布林带
 def calculate_bollinger_bands(data, window):
+    """
+    计算布林带（Bollinger Bands）。
+
+    布林带是一种技术分析工具，由中间的简单移动平均线（SMA）和围绕它的上下两个标准差线组成。
+    布林带可以用来判断市场的波动性以及潜在的超买和超卖状态。
+
+    Args:
+        data (pd.DataFrame): 包含时间序列数据的 Pandas DataFrame，其中至少包括 'close' 列表示收盘价。
+        window (int): 用于计算简单移动平均线和标准差的窗口大小（周期）。
+
+    Returns:
+        pd.Series, pd.Series: 返回两个 Pandas Series 对象，分别表示布林带的上轨（upper_band）和下轨（lower_band）。
+    """
     sma = data["close"].rolling(window=window).mean()
     std = data["close"].rolling(window=window).std()
     upper_band = sma + (std * 2)
@@ -61,7 +73,6 @@ def leverage_suggestion(principal, signal, risk_ratio=0.1):
         return leverage
     else:
         return 1  # 如果信号是 hold，建议杠杆为1（即无杠杆）
-    
 
 
 # 计算止盈和止损点

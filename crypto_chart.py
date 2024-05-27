@@ -165,9 +165,9 @@ if __name__ == "__main__":
     crypto_data = get_crypto_data(exchange, ticker, timeframe, limit)
     if crypto_data is not None:
         crypto_data["MA"] = calculate_moving_average(crypto_data, 20)
-        crypto_data["Upper Band"], crypto_data["Lower Band"] = (
-            calculate_bollinger_bands(crypto_data, 20)
-        )
+        upper_band, lower_band = calculate_bollinger_bands(crypto_data, 20)
+        crypto_data["Upper Band"] = upper_band
+        crypto_data["Lower Band"] = lower_band
         crypto_data["MACD"], crypto_data["Signal"], crypto_data["MACD_Hist"] = (
             calculate_macd(crypto_data)
         )
@@ -193,15 +193,19 @@ if __name__ == "__main__":
                     crypto_data.loc[new_indices, "MA"] = calculate_moving_average(
                         crypto_data, 20
                     ).loc[new_indices]
-                    (
-                        crypto_data.loc[new_indices, "Upper Band"],
-                        crypto_data.loc[new_indices, "Lower Band"],
-                    ) = calculate_bollinger_bands(crypto_data, 20).loc[new_indices]
-                    (
-                        crypto_data.loc[new_indices, "MACD"],
-                        crypto_data.loc[new_indices, "Signal"],
-                        crypto_data.loc[new_indices, "MACD_Hist"],
-                    ) = calculate_macd(crypto_data).loc[new_indices]
+                    upper_band, lower_band = calculate_bollinger_bands(crypto_data, 20)
+                    crypto_data.loc[new_indices, "Upper Band"] = upper_band.loc[
+                        new_indices
+                    ]
+                    crypto_data.loc[new_indices, "Lower Band"] = lower_band.loc[
+                        new_indices
+                    ]
+                    macd, signal, macd_hist = calculate_macd(crypto_data)
+                    crypto_data.loc[new_indices, "MACD"] = macd.loc[new_indices]
+                    crypto_data.loc[new_indices, "Signal"] = signal.loc[new_indices]
+                    crypto_data.loc[new_indices, "MACD_Hist"] = macd_hist.loc[
+                        new_indices
+                    ]
 
                     # 生成交易信号
                     signal = generate_signals(crypto_data)
