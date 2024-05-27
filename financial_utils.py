@@ -146,3 +146,47 @@ def rank_companies(industry, analyses, prices):
         system_prompt, messages, model="claude-3-opus-20240229", max_tokens=3000
     )
     return response_text
+
+
+def get_analyst_ratings(ticker):
+    stock = yf.Ticker(ticker)
+    recommendations = stock.recommendations
+    if recommendations is None or recommendations.empty:
+        return "No analyst ratings available."
+
+    latest_rating = recommendations.iloc[-1]
+
+    firm = latest_rating.get("Firm", "N/A")
+    to_grade = latest_rating.get("To Grade", "N/A")
+    action = latest_rating.get("Action", "N/A")
+
+    rating_summary = f"Latest analyst rating for {ticker}:\nFirm: {firm}\nTo Grade: {to_grade}\nAction: {action}"
+
+    return rating_summary
+
+
+def get_stock_data(ticker, years):
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=years * 365)
+
+    stock = yf.Ticker(ticker)
+
+    # Retrieve historical price data
+    hist_data = stock.history(start=start_date, end=end_date)
+
+    # Retrieve balance sheet
+    balance_sheet = stock.balance_sheet
+
+    # Retrieve financial statements
+    financials = stock.financials
+
+    # Retrieve news articles
+    news = stock.news
+
+    return hist_data, balance_sheet, financials, news
+
+
+def get_current_price(ticker):
+    stock = yf.Ticker(ticker)
+    data = stock.history(period="1d", interval="1m")
+    return data["Close"][-1]

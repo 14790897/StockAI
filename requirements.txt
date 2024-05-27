@@ -1,3 +1,5 @@
 yfinance
 requests
 beautifulsoup4
+matplotlib 
+pandas
