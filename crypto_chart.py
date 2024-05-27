@@ -96,7 +96,7 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
 
 def initialize_plot(data, ticker):
     fig, (ax1, ax2) = plt.subplots(
-        2, 1, figsize=(14, 10), gridspec_kw={"height_ratios": [2, 1], "hspace": 0.3}
+        2, 1, figsize=(14, 10), gridspec_kw={"height_ratios": [2, 1], "hspace": 0.4}
     )
 
     lines = {}
@@ -146,7 +146,7 @@ def initialize_plot(data, ticker):
     ax2.set_xlabel("Time")
     ax2.legend(loc="best")
 
-    plt.tight_layout()
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1, hspace=0.4)
     plt.show()
     return fig, ax1, ax2, lines
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     exchange = ccxt.binance()  # 使用Binance交易所
     ticker = "BTC/USDT"  # 比特币对USDT的符号
     timeframe = "1m"  # 可以更改为'5m', '15m', '1h', '4h', '1d' 等
-    limit = 500  # 获取最近500条数据
+    limit = 1000  # 获取最近1000条数据
     principal = 10  # 本金金额（USD）
 
     plt.ion()  # 开启交互模式
