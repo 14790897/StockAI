@@ -43,6 +43,8 @@ def get_new_crypto_data(exchange, ticker, since=None, timeframe="1m"):
 
 # 计算移动平均线
 def calculate_moving_average(data, window):
+    if len(data) < window:
+        raise ValueError("Data is not sufficient to calculate moving average.")
     return data["close"].rolling(window=window).mean()
 
 
