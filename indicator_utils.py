@@ -28,10 +28,15 @@ def calculate_bollinger_bands(data, window):
 
 # 计算MACD 移动平均收敛/发散指标
 def calculate_macd(data, short_window=12, long_window=26, signal_window=9):
+    # 计算短期EMA
     short_ema = data["close"].ewm(span=short_window, adjust=False).mean()
+    # 计算长期EMA
     long_ema = data["close"].ewm(span=long_window, adjust=False).mean()
+    # 计算MACD线
     macd = short_ema - long_ema
+    # 计算信号线
     signal = macd.ewm(span=signal_window, adjust=False).mean()
+    # 计算MACD Histogram
     macd_hist = macd - signal
     return macd, signal, macd_hist
 
