@@ -158,8 +158,10 @@ if __name__ == "__main__":
     timeframe = "1m"  # 可以更改为'5m', '15m', '1h', '4h', '1d' 等
     limit = 1000  # 获取最近1000条数据
     principal = 10  # 本金金额（USD）
+    should_plot = True  # 控制是否绘制图表
 
-    plt.ion()  # 开启交互模式
+    if should_plot:
+        plt.ion()  # 开启交互模式
 
     # 初始绘图
     crypto_data = get_crypto_data(exchange, ticker, timeframe, limit)
@@ -172,7 +174,8 @@ if __name__ == "__main__":
             calculate_macd(crypto_data)
         )
 
-        fig, ax1, ax2, lines = initialize_plot(crypto_data, ticker)
+        if should_plot:
+            fig, ax1, ax2, lines = initialize_plot(crypto_data, ticker)
 
         while True:
             try:
@@ -219,8 +222,12 @@ if __name__ == "__main__":
                         "current_price": current_price,  # 添加当前价格
                     }
                     print("signal_info", signal_info)
+
                     # 更新图表
-                    plot_crypto_data(crypto_data, ticker, ax1, ax2, lines, signal_info)
+                    if should_plot:
+                        plot_crypto_data(
+                            crypto_data, ticker, ax1, ax2, lines, signal_info
+                        )
 
                 # 每分钟更新一次数据
                 time.sleep(60)
