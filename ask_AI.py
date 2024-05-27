@@ -23,7 +23,7 @@ def ask_AI(
 
     headers = {
         "Authorization": "Bearer " + api_key,
-        "content-type": "application/json",
+        "Content-Type": "application/json",
     }
     data = {
         "model": api_model,
@@ -37,12 +37,12 @@ def ask_AI(
     }
     try:
         response = requests.post(api_url, headers=headers, json=data)
-        response.raise_for_status()  # 检查请求是否成功
     except requests.exceptions.RequestException as e:
         print(f"HTTP request failed: {e}")
         return None
     try:
         response_json = response.json()
+        print("response_json", response_json)
     except ValueError:
         print("Failed to parse JSON response")
         print("Response content:", response.text)
@@ -59,12 +59,7 @@ def ask_AI(
 # 示例用法
 if __name__ == "__main__":
     system_prompt = "You are a helpful assistant."
-    messages = [
-        {
-            "role": "user",
-            "content": "What is the weather like today?",
-        }
-    ]
+    messages = "What is the weather like today?"
 
     try:
         response = ask_AI(system_prompt, messages)

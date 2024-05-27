@@ -10,7 +10,8 @@ from financial_utils import (
 )
 
 # User input
-industry = input("Enter the industry to analyze: ")
+# industry = input("Enter the industry to analyze: ")
+industry = "AI"
 years = 1  # int(input("Enter the number of years for analysis: "))
 
 # Generate ticker ideas for the industry
