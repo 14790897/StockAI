@@ -74,6 +74,7 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
         transform=ax1.transAxes,
         fontsize=12,
         verticalalignment="top",
+        bbox=dict(facecolor="white", alpha=0.5),  # 添加背景框以提高可见性
     )
     ax1.text(
         0.02,
@@ -82,6 +83,7 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
         transform=ax1.transAxes,
         fontsize=12,
         verticalalignment="top",
+        bbox=dict(facecolor="white", alpha=0.5),  # 添加背景框以提高可见性
     )
     if signal_info["signal"] in ["buy", "sell"]:
         ax1.text(
@@ -91,6 +93,7 @@ def plot_crypto_data(data, ticker, ax1, ax2, lines, signal_info):
             transform=ax1.transAxes,
             fontsize=12,
             verticalalignment="top",
+            bbox=dict(facecolor="white", alpha=0.5),  # 添加背景框以提高可见性
         )
 
 
@@ -156,7 +159,7 @@ if __name__ == "__main__":
     exchange = ccxt.binance()  # 使用Binance交易所
     ticker = "BTC/USDT"  # 比特币对USDT的符号
     timeframe = "1m"  # 可以更改为'5m', '15m', '1h', '4h', '1d' 等
-    limit = 1000  # 获取最近1000条数据
+    limit = 500  # 500
     principal = 10  # 本金金额（USD）
     should_plot = True  # 控制是否绘制图表
 
