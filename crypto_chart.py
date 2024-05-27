@@ -143,6 +143,8 @@ if __name__ == "__main__":
 
     # 初始绘图
     crypto_data = get_crypto_data(exchange, ticker, timeframe, limit)
+    # print("crypto_data", crypto_data)
+    # print("len(data) ", len(crypto_data))
     if crypto_data is not None:
         crypto_data["MA"] = calculate_moving_average(crypto_data, 20)
         crypto_data["Upper Band"], crypto_data["Lower Band"] = (
@@ -155,8 +157,8 @@ if __name__ == "__main__":
         fig, ax1, ax2, lines = initialize_plot(crypto_data, ticker)
 
         while True:
-            # 获取加密货币数据
-            last_timestamp = int(crypto_data.index[-1].timestamp() * 1000)
+            # 获取加密货币数据，为了避免获取重复数据，加一毫秒
+            last_timestamp = int(crypto_data.index[-1].timestamp() * 1000) + 1
             new_crypto_data = get_crypto_data(
                 exchange, ticker, timeframe="1m", since=last_timestamp
             )
@@ -168,20 +170,20 @@ if __name__ == "__main__":
                 ]  # 移除重复数据
 
                 # 更新数据
-                new_crypto_data["MA"] = calculate_moving_average(new_crypto_data, 20)
-                new_crypto_data["Upper Band"], new_crypto_data["Lower Band"] = (
-                    calculate_bollinger_bands(new_crypto_data, 20)
+                crypto_data["MA"] = calculate_moving_average(crypto_data, 20)
+                crypto_data["Upper Band"], crypto_data["Lower Band"] = (
+                    calculate_bollinger_bands(crypto_data, 20)
                 )
                 (
-                    new_crypto_data["MACD"],
-                    new_crypto_data["Signal"],
-                    new_crypto_data["MACD_Hist"],
-                ) = calculate_macd(new_crypto_data)
+                    crypto_data["MACD"],
+                    crypto_data["Signal"],
+                    crypto_data["MACD_Hist"],
+                ) = calculate_macd(crypto_data)
 
                 # 生成交易信号
-                signal = generate_signals(new_crypto_data)
+                signal = generate_signals(crypto_data)
                 leverage = leverage_suggestion(principal, signal)
-                current_price = new_crypto_data["close"].iloc[-1]  # 获取当前价格
+                current_price = crypto_data["close"].iloc[-1]  # 获取当前价格
 
                 # 输出交易信号、止盈止损点和杠杆建议
                 signal_info = {
@@ -191,7 +193,7 @@ if __name__ == "__main__":
                 }
                 print("signal_info", signal_info)
                 # 更新图表
-                plot_crypto_data(new_crypto_data, ticker, ax1, ax2, lines, signal_info)
+                plot_crypto_data(crypto_data, ticker, ax1, ax2, lines, signal_info)
 
             # 每分钟更新一次数据
             time.sleep(10)
